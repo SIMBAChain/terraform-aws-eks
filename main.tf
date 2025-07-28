@@ -123,7 +123,7 @@ resource "aws_ec2_tag" "cluster_primary_security_group" {
     k => v if local.create && k != "Name" && var.create_cluster_primary_security_group_tags && v != null
   }
 
-  resource_id = locals.eks_cluster..vpc_config[0].cluster_security_group_id
+  resource_id = locals.eks_cluster.vpc_config[0].cluster_security_group_id
   key         = each.key
   value       = each.value
 }
@@ -196,7 +196,7 @@ locals {
 resource "aws_eks_access_entry" "this" {
   for_each = { for k, v in local.merged_access_entries : k => v if local.create }
 
-  cluster_name      = locals.eks_cluster..name
+  cluster_name      = locals.eks_cluster.name
   kubernetes_groups = try(each.value.kubernetes_groups, null)
   principal_arn     = each.value.principal_arn
   type              = try(each.value.type, "STANDARD")
@@ -213,7 +213,7 @@ resource "aws_eks_access_policy_association" "this" {
     type       = each.value.association_access_scope_type
   }
 
-  cluster_name = locals.eks_cluster..name
+  cluster_name = locals.eks_cluster.name
 
   policy_arn    = each.value.association_policy_arn
   principal_arn = each.value.principal_arn
@@ -341,7 +341,7 @@ data "tls_certificate" "this" {
   # Not available on outposts
   count = local.create_oidc_provider && var.include_oidc_root_ca_thumbprint ? 1 : 0
 
-  url = locals.eks_cluster..identity[0].oidc[0].issuer
+  url = locals.eks_cluster.identity[0].oidc[0].issuer
 }
 
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
@@ -350,7 +350,7 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
 
   client_id_list  = distinct(compact(concat(["sts.amazonaws.com"], var.openid_connect_audiences)))
   thumbprint_list = concat(local.oidc_root_ca_thumbprint, var.custom_oidc_thumbprints)
-  url             = locals.eks_cluster..identity[0].oidc[0].issuer
+  url             = locals.eks_cluster.identity[0].oidc[0].issuer
 
   tags = merge(
     { Name = "${var.cluster_name}-eks-irsa" },
@@ -496,7 +496,7 @@ data "aws_eks_addon_version" "this" {
   for_each = { for k, v in var.cluster_addons : k => v if local.create && !local.create_outposts_local_cluster }
 
   addon_name         = try(each.value.name, each.key)
-  kubernetes_version = coalesce(var.cluster_version, locals.eks_cluster..version)
+  kubernetes_version = coalesce(var.cluster_version, locals.eks_cluster.version)
   most_recent        = try(each.value.most_recent, null)
 }
 
@@ -504,7 +504,7 @@ resource "aws_eks_addon" "this" {
   # Not supported on outposts
   for_each = { for k, v in var.cluster_addons : k => v if !try(v.before_compute, false) && local.create && !local.create_outposts_local_cluster }
 
-  cluster_name = locals.eks_cluster..name
+  cluster_name = locals.eks_cluster.name
   addon_name   = try(each.value.name, each.key)
 
   addon_version               = coalesce(try(each.value.addon_version, null), data.aws_eks_addon_version.this[each.key].version)
@@ -533,7 +533,7 @@ resource "aws_eks_addon" "before_compute" {
   # Not supported on outposts
   for_each = { for k, v in var.cluster_addons : k => v if try(v.before_compute, false) && local.create && !local.create_outposts_local_cluster }
 
-  cluster_name = locals.eks_cluster..name
+  cluster_name = locals.eks_cluster.name
   addon_name   = try(each.value.name, each.key)
 
   addon_version               = coalesce(try(each.value.addon_version, null), data.aws_eks_addon_version.this[each.key].version)
@@ -560,14 +560,14 @@ resource "aws_eks_addon" "before_compute" {
 resource "aws_eks_identity_provider_config" "this" {
   for_each = { for k, v in var.cluster_identity_providers : k => v if local.create && !local.create_outposts_local_cluster }
 
-  cluster_name = locals.eks_cluster..name
+  cluster_name = locals.eks_cluster.name
 
   oidc {
     client_id                     = each.value.client_id
     groups_claim                  = lookup(each.value, "groups_claim", null)
     groups_prefix                 = lookup(each.value, "groups_prefix", null)
     identity_provider_config_name = try(each.value.identity_provider_config_name, each.key)
-    issuer_url                    = try(each.value.issuer_url, locals.eks_cluster..identity[0].oidc[0].issuer)
+    issuer_url                    = try(each.value.issuer_url, locals.eks_cluster.identity[0].oidc[0].issuer)
     required_claims               = lookup(each.value, "required_claims", null)
     username_claim                = lookup(each.value, "username_claim", null)
     username_prefix               = lookup(each.value, "username_prefix", null)

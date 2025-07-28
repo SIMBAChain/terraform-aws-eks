@@ -1,3 +1,4 @@
+# For COSMOS we must not create new cluster, must use an existing cluster that was created via Service Catalog
 variable "create_new_cluster" {
   description = "Controls if the eks cluster resource should be created. Otherwise cluster name will be assumed to already exist"
   type        = bool
