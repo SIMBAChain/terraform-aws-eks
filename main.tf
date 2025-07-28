@@ -112,7 +112,7 @@ data "aws_eks_cluster" "existing" {
 }
 
 locals {
-  eks_cluster = var.create_new_cluster ? locals.eks_cluster. : data.aws_eks_cluster.existing[0]
+  eks_cluster = var.create_new_cluster ? aws_eks_cluster.this[0] : data.aws_eks_cluster.existing[0]
 }
 
 resource "aws_ec2_tag" "cluster_primary_security_group" {
