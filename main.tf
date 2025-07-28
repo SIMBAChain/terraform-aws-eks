@@ -18,6 +18,8 @@ locals {
 
   create_outposts_local_cluster    = length(var.outpost_config) > 0
   enable_cluster_encryption_config = length(var.cluster_encryption_config) > 0 && !local.create_outposts_local_cluster
+
+  use_existing_cluster = !var.create_new_cluster
 }
 
 ################################################################################
@@ -25,7 +27,7 @@ locals {
 ################################################################################
 
 resource "aws_eks_cluster" "this" {
-  count = local.create ? 1 : 0
+  count = var.create_new_cluster ? 1 : 0
 
   name                      = var.cluster_name
   role_arn                  = local.cluster_role
@@ -102,6 +104,15 @@ resource "aws_eks_cluster" "this" {
     aws_cloudwatch_log_group.this,
     aws_iam_policy.cni_ipv6_policy,
   ]
+}
+
+data "aws_eks_cluster" "existing" {
+  count = local.use_existing_cluster ? 1 : 0
+  name  = var.cluster_name
+}
+
+locals {
+  eks_cluster = var.create_new_cluster ? aws_eks_cluster.this[0] : data.aws_eks_cluster.existing[0]
 }
 
 resource "aws_ec2_tag" "cluster_primary_security_group" {
