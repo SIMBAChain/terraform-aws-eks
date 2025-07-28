@@ -18,7 +18,7 @@ locals {
     }
   }
 
-  kubernetes_network_config = try(locals.eks_cluster.kubernetes_network_config[0], {})
+  kubernetes_network_config = try(local.eks_cluster.kubernetes_network_config[0], {})
 }
 
 # This sleep resource is used to provide a timed gap between the cluster creation and the downstream dependencies
@@ -32,12 +32,12 @@ resource "time_sleep" "this" {
   create_duration = var.dataplane_wait_duration
 
   triggers = {
-    cluster_name         = locals.eks_cluster.name
-    cluster_endpoint     = locals.eks_cluster.endpoint
-    cluster_version      = locals.eks_cluster.version
+    cluster_name         = local.eks_cluster.name
+    cluster_endpoint     = local.eks_cluster.endpoint
+    cluster_version      = local.eks_cluster.version
     cluster_service_cidr = var.cluster_ip_family == "ipv6" ? try(local.kubernetes_network_config.service_ipv6_cidr, "") : try(local.kubernetes_network_config.service_ipv4_cidr, "")
 
-    cluster_certificate_authority_data = locals.eks_cluster.certificate_authority[0].data
+    cluster_certificate_authority_data = local.eks_cluster.certificate_authority[0].data
   }
 }
 
@@ -400,7 +400,7 @@ module "eks_managed_node_group" {
 
   # Security group
   vpc_security_group_ids            = compact(concat([local.node_security_group_id], try(each.value.vpc_security_group_ids, var.eks_managed_node_group_defaults.vpc_security_group_ids, [])))
-  cluster_primary_security_group_id = try(each.value.attach_cluster_primary_security_group, var.eks_managed_node_group_defaults.attach_cluster_primary_security_group, false) ? locals.eks_cluster.vpc_config[0].cluster_security_group_id : null
+  cluster_primary_security_group_id = try(each.value.attach_cluster_primary_security_group, var.eks_managed_node_group_defaults.attach_cluster_primary_security_group, false) ? local.eks_cluster.vpc_config[0].cluster_security_group_id : null
 
   tags = merge(var.tags, try(each.value.tags, var.eks_managed_node_group_defaults.tags, {}))
 }
@@ -543,7 +543,7 @@ module "self_managed_node_group" {
 
   # Security group
   vpc_security_group_ids            = compact(concat([local.node_security_group_id], try(each.value.vpc_security_group_ids, var.self_managed_node_group_defaults.vpc_security_group_ids, [])))
-  cluster_primary_security_group_id = try(each.value.attach_cluster_primary_security_group, var.self_managed_node_group_defaults.attach_cluster_primary_security_group, false) ? locals.eks_cluster.vpc_config[0].cluster_security_group_id : null
+  cluster_primary_security_group_id = try(each.value.attach_cluster_primary_security_group, var.self_managed_node_group_defaults.attach_cluster_primary_security_group, false) ? local.eks_cluster.vpc_config[0].cluster_security_group_id : null
 
   tags = merge(var.tags, try(each.value.tags, var.self_managed_node_group_defaults.tags, {}))
 }

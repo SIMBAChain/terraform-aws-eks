@@ -4,7 +4,7 @@
 
 output "cluster_arn" {
   description = "The Amazon Resource Name (ARN) of the cluster"
-  value       = try(locals.eks_cluster.arn, null)
+  value       = try(local.eks_cluster.arn, null)
 
   depends_on = [
     aws_eks_access_entry.this,
@@ -14,7 +14,7 @@ output "cluster_arn" {
 
 output "cluster_certificate_authority_data" {
   description = "Base64 encoded certificate data required to communicate with the cluster"
-  value       = try(locals.eks_cluster.certificate_authority[0].data, null)
+  value       = try(local.eks_cluster.certificate_authority[0].data, null)
 
   depends_on = [
     aws_eks_access_entry.this,
@@ -24,7 +24,7 @@ output "cluster_certificate_authority_data" {
 
 output "cluster_endpoint" {
   description = "Endpoint for your Kubernetes API server"
-  value       = try(locals.eks_cluster.endpoint, null)
+  value       = try(local.eks_cluster.endpoint, null)
 
   depends_on = [
     aws_eks_access_entry.this,
@@ -34,12 +34,12 @@ output "cluster_endpoint" {
 
 output "cluster_id" {
   description = "The ID of the EKS cluster. Note: currently a value is returned only for local EKS clusters created on Outposts"
-  value       = try(locals.eks_cluster.cluster_id, "")
+  value       = try(local.eks_cluster.cluster_id, "")
 }
 
 output "cluster_name" {
   description = "The name of the EKS cluster"
-  value       = try(locals.eks_cluster.name, "")
+  value       = try(local.eks_cluster.name, "")
 
   depends_on = [
     aws_eks_access_entry.this,
@@ -49,37 +49,37 @@ output "cluster_name" {
 
 output "cluster_oidc_issuer_url" {
   description = "The URL on the EKS cluster for the OpenID Connect identity provider"
-  value       = try(locals.eks_cluster.identity[0].oidc[0].issuer, null)
+  value       = try(local.eks_cluster.identity[0].oidc[0].issuer, null)
 }
 
 output "cluster_version" {
   description = "The Kubernetes version for the cluster"
-  value       = try(locals.eks_cluster.version, null)
+  value       = try(local.eks_cluster.version, null)
 }
 
 output "cluster_platform_version" {
   description = "Platform version for the cluster"
-  value       = try(locals.eks_cluster.platform_version, null)
+  value       = try(local.eks_cluster.platform_version, null)
 }
 
 output "cluster_status" {
   description = "Status of the EKS cluster. One of `CREATING`, `ACTIVE`, `DELETING`, `FAILED`"
-  value       = try(locals.eks_cluster.status, null)
+  value       = try(local.eks_cluster.status, null)
 }
 
 output "cluster_primary_security_group_id" {
   description = "Cluster security group that was created by Amazon EKS for the cluster. Managed node groups use this security group for control-plane-to-data-plane communication. Referred to as 'Cluster security group' in the EKS console"
-  value       = try(locals.eks_cluster.vpc_config[0].cluster_security_group_id, null)
+  value       = try(local.eks_cluster.vpc_config[0].cluster_security_group_id, null)
 }
 
 output "cluster_service_cidr" {
   description = "The CIDR block where Kubernetes pod and service IP addresses are assigned from"
-  value       = try(locals.eks_cluster.kubernetes_network_config[0].service_ipv4_cidr, locals.eks_cluster.kubernetes_network_config[0].service_ipv6_cidr, null)
+  value       = try(local.eks_cluster.kubernetes_network_config[0].service_ipv4_cidr, local.eks_cluster.kubernetes_network_config[0].service_ipv6_cidr, null)
 }
 
 output "cluster_ip_family" {
   description = "The IP family used by the cluster (e.g. `ipv4` or `ipv6`)"
-  value       = try(locals.eks_cluster.kubernetes_network_config[0].ip_family, null)
+  value       = try(local.eks_cluster.kubernetes_network_config[0].ip_family, null)
 }
 
 ################################################################################
@@ -149,7 +149,7 @@ output "node_security_group_id" {
 
 output "oidc_provider" {
   description = "The OpenID Connect identity provider (issuer URL without leading `https://`)"
-  value       = try(replace(locals.eks_cluster.identity[0].oidc[0].issuer, "https://", ""), null)
+  value       = try(replace(local.eks_cluster.identity[0].oidc[0].issuer, "https://", ""), null)
 }
 
 output "oidc_provider_arn" {
